@@ -30,6 +30,47 @@ def main():
 	for f in files:
 		tfs.add(f.split("_")[0])
 
+	command="mkdir "+args.Destination[0]
+	os.system(command)
+
+	#Training Data
+	labelList=os.listdir(args.TrainingData[0])
+	outPath=str(args.Destination[0])+"Training/"
+	command="mkdir "+str(outPath)
+	os.system(command)
+#	for tf in tfs:
+#		for f in files:
+#			if (tf in f):
+#				if ("Affinity_Peak_Coverage.bed" in f):
+#					for label in labelList:
+#						if (tf in label):
+#							folderName=label.split(".")[0]
+#							if not(os.path.exists(outPath+folderName)):
+#								command="mkdir "+outPath+folderName
+#								os.system(command)
+#							print("Intersecting Training data for "+f+" with labels "+str(label))
+#							command="intersectBed -b "+TFPath+f+" -a "+ str(args.TrainingData[0]) +label+" -loj -F "+str(overlap)+" | cut -f 5,6,7 --complement > affinity"+str(float(overlap)*100)+".temp"
+#							os.system(command)
+#							command="head -n 1 "+ TFPath+f+" > header"+str(float(overlap)*100)+".temp"
+#							os.system(command)
+#							headerf=open("header"+str(float(overlap)*100)+".temp","r")
+#							s=headerf.readline().replace("#","").split()
+#							nheader="\t\t\tResponse"
+#							for element in s:
+#								nheader+="\t"+str(element)
+#							headerf.close()
+#							newfile=open("header"+str(float(overlap)*100)+".temp","w")
+#							newfile.write(nheader+'\n')
+#							newfile.close()
+#							command="cat header"+str(float(overlap)*100)+".temp affinity"+str(float(overlap)*100)+".temp > "+outPath+label.split(".")[0]+"/"+tf+"_"+label.split(".")[0]+"_Affinity_Peak_Coverage_"+str(float(overlap)*100)+"_Converted.txt"
+#							os.system(command)
+#							command="rm header"+str(float(overlap)*100)+".temp"
+#							os.system(command)
+#							command="rm affinity"+str(float(overlap)*100)+".temp"
+#							os.system(command)
+
+
+
 	#LeaderBoard Data
 	outPath=str(args.Destination[0])+"Leaderboard/"
 	command="mkdir "+str(outPath)
@@ -70,37 +111,6 @@ def main():
 					os.system(command)
 					command="rm affinity"+str(float(overlap)*100)+".temp"
 					os.system(command)
-	#Training Data
-	labelList=os.listdir(args.TrainingData[0])
-	outPath=str(args.Destination[0])+"Training/"
-	command="mkdir "+str(outPath)
-	os.system(command)
-	for tf in tfs:
-		for f in files:
-			if (tf in f):
-				if ("Affinity_Peak_Coverage.bed" in f):
-					for label in labelList:
-						if (tf in label):
-							print("Intersecting Training data for "+f+" with labels "+str(label))
-							command="intersectBed -b "+TFPath+f+" -a "+ str(args.TrainingData[0]) +label+" -loj -F "+str(overlap)+" | cut -f 5,6,7 --complement > affinity"+str(float(overlap)*100)+".temp"
-							os.system(command)
-							command="head -n 1 "+ TFPath+f+" > header"+str(float(overlap)*100)+".temp"
-							os.system(command)
-							headerf=open("header"+str(float(overlap)*100)+".temp","r")
-							s=headerf.readline().replace("#","").split()
-							nheader="\t\t\tResponse"
-							for element in s:
-								nheader+="\t"+str(element)
-							headerf.close()
-							newfile=open("header"+str(float(overlap)*100)+".temp","w")
-							newfile.write(nheader+'\n')
-							newfile.close()
-							command="cat header"+str(float(overlap)*100)+".temp affinity"+str(float(overlap)*100)+".temp > "+outPath+tf+"_"+label.split(".")[0]+"_Affinity_Peak_Coverage_"+str(float(overlap)*100)+"_Converted.txt"
-							os.system(command)
-							command="rm header"+str(float(overlap)*100)+".temp"
-							os.system(command)
-							command="rm affinity"+str(float(overlap)*100)+".temp"
-							os.system(command)
 
 
 main()
