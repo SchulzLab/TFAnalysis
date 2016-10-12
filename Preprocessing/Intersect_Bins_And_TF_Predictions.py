@@ -88,7 +88,7 @@ def main():
 							os.system(command)
 							headerf=open("header"+str(float(overlap)*100)+".temp","r")
 							s=headerf.readline().replace("#","").split()
-							nheader="\t\t\tRespone"
+							nheader="\t\t\tResponse"
 							for element in s:
 								nheader+="\t"+str(element)
 							headerf.close()
