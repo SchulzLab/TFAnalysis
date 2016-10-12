@@ -3,6 +3,7 @@ import subprocess
 import sys
 
 #This script cats the individual peak files together and merges them using bedtools merge.
+#Bedtools must be in the user path.
 #
 #Arguments:
 #arg1: Output folder for the combined peak set
