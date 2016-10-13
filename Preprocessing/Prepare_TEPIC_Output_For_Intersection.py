@@ -4,9 +4,8 @@ import argparse
 from sets import Set
 
 
-#This script transforms the TEPIC output into bed file like structure.
-#Further, the coverage computed within peaks is added as an additional column to the file containing the unscaled scores.
-#
+#This script transforms the TEPIC output into a bed file structure.
+#Further, the coverage computed within peaks is added as an additional column to the file containing TF Affinity values.
 #
 #arg1: Path to the folder containing TF predictions computed by TEPIC. The reformated files will be stored in the same directory.
 

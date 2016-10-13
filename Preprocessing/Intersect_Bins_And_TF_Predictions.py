@@ -75,6 +75,12 @@ def main():
 	outPath=str(args.Destination[0])+"Leaderboard/"
 	command="mkdir "+str(outPath)
 	os.system(command)
+	command="mkdir "+str(outPath+"Full")
+	os.system(command)
+	command="mkdir "+str(outPath+"Non_Zero")
+	os.system(command)
+	command="mkdir "+str(outPath+"Zero")
+	os.system(command)
 	for tf in tfs:
 		for f in files:
 			if (tf in f):
@@ -84,7 +90,11 @@ def main():
 					os.system(command)
 					command="head -n 1 "+ TFPath+f+" > header"+str(float(overlap)*100)+".temp"
 					os.system(command)
-					command="cat header"+str(float(overlap)*100)+".temp affinity"+str(float(overlap)*100)+".temp > "+outPath+tf+"_Affinity_Peak_Coverage_"+str(float(overlap)*100)+"_Converted.txt"
+					command="cat header"+str(float(overlap)*100)+".temp affinity"+str(float(overlap)*100)+".temp > "+outPath+"Full/"+tf+"_Affinity_Peak_Coverage_"+str(float(overlap)*100)+"_Converted.txt"
+					os.system(command)
+					command="awk \'{if ($4 != \".\") print $0}\' "+outPath+"Full/"+tf+"_Affinity_Peak_Coverage_"+str(float(overlap)*100)+"_Converted.txt > "+outPath+"Non_Zero/"+tf+"_Affinity_Peak_Coverage_"+str(float(overlap)*100)+"_Converted_Non_Zero.txt"
+					os.system(command)
+					command="awk \'{if ($4 == \".\") print $0}\' "+outPath+"Full/"+tf+"_Affinity_Peak_Coverage_"+str(float(overlap)*100)+"_Converted.txt > "+outPath+"Zero/"+tf+"_Affinity_Peak_Coverage_"+str(float(overlap)*100)+"_Converted_Zero.txt"
 					os.system(command)
 					command="rm header"+str(float(overlap)*100)+".temp"
 					os.system(command)
@@ -95,7 +105,10 @@ def main():
 	outPath=str(args.Destination[0])+"Test/"
 	command="mkdir "+str(outPath)
 	os.system(command)
-
+	command="mkdir "+str(outPath+"Non_Zero")
+	os.system(command)
+	command="mkdir "+str(outPath+"Zero")
+	os.system(command)
 	for tf in tfs:
 		for f in files:
 			if (tf in f):
@@ -105,7 +118,11 @@ def main():
 					os.system(command)
 					command="head -n 1 "+ TFPath+f+" > header"+str(float(overlap)*100)+".temp"
 					os.system(command)
-					command="cat header"+str(float(overlap)*100)+".temp affinity"+str(float(overlap)*100)+".temp > "+outPath+tf+"_Affinity_Peak_Coverage_"+str(float(overlap)*100)+"_Converted.txt"
+					command="cat header"+str(float(overlap)*100)+".temp affinity"+str(float(overlap)*100)+".temp > "+outPath+"Full/"+tf+"_Affinity_Peak_Coverage_"+str(float(overlap)*100)+"_Converted.txt"
+					os.system(command)
+					command="awk \'{if ($4 != \".\") print $0}\' "+outPath+"Full/"+tf+"_Affinity_Peak_Coverage_"+str(float(overlap)*100)+"_Converted.txt > "+outPath+"Non_Zero/"+tf+"_Affinity_Peak_Coverage_"+str(float(overlap)*100)+"_Converted_Non_Zero.txt"
+					os.system(command)
+					command="awk \'{if ($4 == \".\") print $0}\' "+outPath+"Full/"+tf+"_Affinity_Peak_Coverage_"+str(float(overlap)*100)+"_Converted.txt > "+outPath+"Zero/"+tf+"_Affinity_Peak_Coverage_"+str(float(overlap)*100)+"_Converted_Zero.txt"
 					os.system(command)
 					command="rm header"+str(float(overlap)*100)+".temp"
 					os.system(command)

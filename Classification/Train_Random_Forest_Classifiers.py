@@ -6,8 +6,8 @@ from sets import Set
 #This script invokes the R-script that handles learning of the random forest models.
 #The randomForest R-Package must be available.
 #
-#arg1:Path to the RData files to train the random forest models.
-#arg2: Output folder for the trained random forest models.
+#arg1:Path to the RData files to that should be used in training the random forest models.
+#arg2: Output folder to store the trained random forest models.
 
 def main():
 	parser=argparse.ArgumentParser(prog="Train_Random_Forest_Classifiers.py")
