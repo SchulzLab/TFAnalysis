@@ -2,8 +2,12 @@ import sys
 import os
 import argparse
 
-#arg1 File containing sequences with "chr start end" in the first three columns that should get a probability of 0.0
-#arg2 Output file name
+#This script performs post processing of the random forest output. 
+
+#arg1 Path to the random forest classification results for either Leaderboard or Test data.
+#arg2 Path to the files holding the intersected data that was not overlapping with any DHS sites
+#arg3 Directory where the results should be stored
+#arg4 Label which is either L for Leaderboard or F for Finalround submission.
 
 
 def main():
@@ -14,7 +18,7 @@ def main():
 	parser.add_argument("Round",nargs=1,help="Flag to select the submission round. F for Final round submisisons, L for Leaderboard submissions")
 	args=parser.parse_args()
 
-#PART1
+	#Removing duplicate bins from the classified data, taking the highest probability of the duplicated bins as the resulting probability.
 	srcdir=args.Classification_Results_Non_Zero[0]
 	tardir=args.Processed_Files[0]
 	zerodir=args.Files_Without_DHS[0]
@@ -49,7 +53,7 @@ def main():
 		outfile.close()
 
 
-#PART2
+	#Adding Probabilities of 0.0 to the bin without overlapping DNase data.
 	command="mkdir "+tardir+"Zero"
 	os.system(command)
 	zeroFiles=os.listdir(zerodir)
@@ -65,7 +69,7 @@ def main():
 		newfile.close()
 
 
-##PART3
+	#Merging Non-Zero and Zero files, sorting them such that the order fits the format required for scoring.
 	print("Generating final output files")
 	originalFiles=os.listdir(srcdir)
 	command="mkdir "+tardir+typ
