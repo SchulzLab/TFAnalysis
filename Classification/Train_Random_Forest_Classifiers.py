@@ -10,7 +10,7 @@ from sets import Set
 #arg2: Output folder for the trained random forest models.
 
 def main():
-	parser=argparse.ArgumentParser(prog="Intersect_Bins_And_TF_Predictions.py")
+	parser=argparse.ArgumentParser(prog="Train_Random_Forest_Classifiers.py")
 	parser.add_argument("Training",nargs=1,help="Path to the RData files holding the training data")
 	parser.add_argument("Destination",nargs=1,help="Path to write the Random Forest models")
 	args=parser.parse_args()
@@ -22,8 +22,11 @@ def main():
 	files=os.listdir(args.Training[0])	
 	for f in files:
 		if ("Features" in f):
-			command="R3script Internal-Rscripts/Train_Random_Forest_Classifiers.R " + args.Training[0]+f+ " "+args.Training[0]+f.replace("Features","Response")+" "+args.Destination[0]+f.split("_")[0]+"/"
+			command="R3script Internal-Rscripts/Train_Random_Forest_Classifiers.R " + args.Training[0]+f+ " "+args.Training[0]+f.replace("Features","Response")+" "+args.Destination[0]+f.split("_")[0]
+			print(command)
 			os.system(command)
+
+
 		
 		
 
