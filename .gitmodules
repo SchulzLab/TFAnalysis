@@ -1,0 +1,6 @@
+[submodule "TEPIC"]
+	path = TEPIC
+	url = https://github.com/SchulzLab/TEPIC.git
+[submodule "JAMM.wiki"]
+	path = JAMM.wiki
+	url = https://github.com/mahmoudibrahim/JAMM.wiki.git
