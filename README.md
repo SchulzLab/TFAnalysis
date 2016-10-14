@@ -69,7 +69,9 @@ python Combine_DHS_Peaks.py <Output folder for the merged peak set of the tissue
 
 ###Computing Transcription Factor affinities using TEPIC
 ####Step 1
-Transcription factor binding affinities are calculated using the [TEPIC](https://github.com/SchulzLab/TEPIC) method. This has to be started manually on all files containing the merged DHS sites.
+Transcription factor binding affinities are calculated using the [TEPIC](https://github.com/SchulzLab/TEPIC) method. 
+These affinities will be later used in a random forest model as features to predict the binding of a distinct TF.
+*TEPIC* has to be started manually on all files containing the merged DHS sites.
 Please check the TEPIC repository for details on the method. 
 
 Starting TEPIC as follows produces all files which are necessary for further processing:
@@ -121,6 +123,12 @@ The command to run the script for one such file is:
 ```
 python Predict_TF_Binding.py <File to be classified> <Folder containing the trained random forest models> <Name of the TF for which binding should be predicted> <Target directory to store the predictions> 
 ```
-###Preparing the data for submission
+###Preparing data for submission
+In order to reformat the data such that it sufficies the requirements of the challenge, the classification results are reformatted using the script `Postprocessing/Prepare_Predictions_For_Submission.py`.
+The script combines the classified data with the remaining files that contain bins without overlaping DHS sites. 
+Further, the data is sorted and stored according to the challenge naming conventions.
 
-##Contact
+The command to run the script is:
+```
+python Prepare_Predictions_For_Submission.py <Folder containing the classified files> <Folder containing the files without overlapping DHS sites> <Target directory> <F for Final round submission, L for Leaderboard submission>
+```
