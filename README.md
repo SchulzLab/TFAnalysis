@@ -33,7 +33,7 @@ The provided TF ChIP-seq label tsv files have to separated by TF and tissue. Fur
 just as many samples from the unbound class as there are for the bound class. 
 Use the script `Preprocessing/Split_and_Balance_ChIP-seq_TSV_files.py` to perform these tasks. The command line is:
 ```
-python Split_and_Balance_ChIP-seq_TSV_files.py < Path to the decompressed TF ChIP-seq label tsv files > < Directory to write the processed files to >
+python Split_and_Balance_ChIP-seq_TSV_files.py <Path to TF ChIP-seq label tsv files> <Target directory>
 ```
 
 ###Computing Transcription Factor affinities using TEPIC
