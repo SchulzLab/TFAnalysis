@@ -1,5 +1,5 @@
 # TFAnalysis
-This project contains our code used to generate the conference round submissions to the _ENCODE DREAM in vivo Transcription Factor Binding Site Prediction Challenge_.
+This project contains our code used to generate the leaderboard and conference round submissions to the _ENCODE DREAM in vivo Transcription Factor Binding Site Prediction Challenge_.
 
 ##Required software
 In order to operate our code on a linux system, the following software must be installed:
@@ -13,13 +13,14 @@ In order to operate our code on a linux system, the following software must be i
 Note that _TEPIC_ and _JAMM_ have additional dependencies. Links to the respective repositories are set up in this project.
 
 ##Required data
-To run our scripts, the following data from Synapse must be available:
+To run our scripts, the following data from Synapse must be available in decompressed form:
 - The file *training_data.ChIPseq.tar*
 - The file *training_data.DNASE_wo_bams.tar*
 - The file *training_data.annotations.tar*
 - All DNase bam files stored in the [DNase bams folder at synapse](https://www.synapse.org/#!Synapse:syn6176232)
 
-In addition, the human reference genome in fasta format, version *hg19*, must be available. A corresponding [genome size file](Preprocessing/Genome_Size_File_For_JAMM.txt), required by *JAMM*,
+In addition, the human reference genome in fasta format, version *hg19*, must be available. 
+A [genome size file](Preprocessing/Genome_Size_File_For_JAMM.txt), which is required by *JAMM*,
 is included in the *Preprocessing* folder. 
 Position Frequency Matrices (PFMs), obtained from Jaspar, Hocomoco, and Uniprobe are already included in the _TEPIC_ repository.
 
@@ -29,7 +30,7 @@ Please add a **/** after foldernames in the command line arguments.
 ###Data preprocessing
 
 ####Processing TF ChIP-seq label tsv data
-The provided TF ChIP-seq label tsv files have to separated by TF and tissue. Further, the training data is balanced by randomly choosing
+The provided TF ChIP-seq label tsv files are separated by TF and tissue. Further, the training data is balanced by randomly choosing
 just as many samples from the unbound class as there are for the bound class. 
 Use the script `Preprocessing/Split_and_Balance_ChIP-seq_TSV_files.py` to perform these tasks. 
 
@@ -76,7 +77,7 @@ Please check the TEPIC repository for details on the method.
 
 Starting TEPIC as follows produces all files which are necessary for further processing:
 ```
-bash TEPIC.sh -g <Reference genome> -b <Merged DHS bed file> -o <Prefix of the output files (including the path)> -p <Position Frequency matrices> -c <Number of cores>
+bash TEPIC.sh -g <Reference genome> -b <Merged DHS bed file> -o <Prefix of the output files (including the path)> -p <Position frequency matrices> -c <Number of cores>
 ```
 
 ####Step 2
@@ -90,7 +91,8 @@ python Prepare_TEPIC_Output_For_Intersection.py <Folder containing the output fi
 
 ####Step 3
 Before Transcription Factor (TF) binding can be predicted, the merged TF scores calcuated in DHS sites identified by JAMM have to be intersected with the binned training, leaderboard, and test data sets.
-This script automatically distributs the training data into subfolders per TF. Leaderboard and test data is splitted according to the presence of DHS sites in bins, as only bins with overlapping DHS sites should be classified.
+This script automatically distributs the training data into subfolders per TF. 
+Leaderboard and test data is splitted according to the presence of DHS sites in bins as only bins with overlapping DHS sites can be classified.
 This can be done by running the script `Preprocessing/Intersect_Bins_And_TF_Predictions.py`. 
 Using *bedtools* *intersect* and the *left outer join* option, each bin will be assigned to the corresponding TF affinities computed within the intersecting DHS.
 
@@ -110,6 +112,8 @@ Rscript Dump_Training_As_RData.R <Folder holding the subfolders with the trainin
 ```
 ####Step 2 Training Random Forests
 To train the random forests, the script `Classification/Train_Random_Forest_Classifiers.py` can be used.
+We learn 4500 trees and use the default values
+for cross validation. We had to reduce the amount of training data to only 8% of each class to make the learning feasible in terms of memory usage.
 
 The command is:
 ```
@@ -117,7 +121,7 @@ python Train_Random_Forest_Classifiers.py <Folder containing the RData files pro
 ```
 ####Step 3 Applying Random Forests to Leaderboard and Test data
 To make predictions on the leaderboard and test data sets, the script `Classification/Predict_TF_Binding.py` can be used. This scripts has to be started manually
-for all files, that should be classified.
+for all files that should be classified.
 
 The command to run the script for one such file is:
 ```
@@ -132,3 +136,6 @@ The command to run the script is:
 ```
 python Prepare_Predictions_For_Submission.py <Folder containing the classified files> <Folder containing the files without overlapping DHS sites> <Target directory> <F for Final round submission, L for Leaderboard submission>
 ```
+
+##Contact
+Please contact *fbejhati[at]mmci.uni-saarland.de* or *fschmidt[at]mmci.uni-saarland.de* in case of questions.
