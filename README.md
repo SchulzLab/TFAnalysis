@@ -31,8 +31,10 @@ In the following sections, the usage of our pipeline is described step by step.
 ####Processing TF ChIP-seq data
 The provided TF ChIP-seq label tsv files have to separated by TF and tissue. Further, the training data is balanced by randomly choosing
 just as many samples from the unbound class as there are for the bound class. 
-Use the script `Split_and_Balance_ChIP-seq_TSV_files.py` to perform these tasks. The command line is:
-    python Split_and_Balance_ChIP-seq_TSV_files.py < Path to the decompressed TF ChIP-seq label tsv files > < Directory to write the processed files to >
+Use the script `Preprocessing/Split_and_Balance_ChIP-seq_TSV_files.py` to perform these tasks. The command line is:
+```
+python Split_and_Balance_ChIP-seq_TSV_files.py < Path to the decompressed TF ChIP-seq label tsv files > < Directory to write the processed files to >
+```
 
 ###Computing Transcription Factor affinities using TEPIC
 
