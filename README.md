@@ -3,7 +3,7 @@ This project contains our code used to generate the conference round submissions
 
 ##Required software
 In order to operate our code on a linux system, the following software must be installed:
-- [bedtools](https://github.com/arq5x/bedtools2)
+- [bedtools](https://github.com/arq5x/bedtools2) (minimum version 2.25.0)
 - R (minimum version 3.x.x)
 - The _randomForest_ R-package
 - Python (minimum version 2.7)
@@ -28,22 +28,36 @@ In the following sections, the usage of our pipeline is described step by step.
 
 ###Data preprocessing
 
-####Processing TF ChIP-seq data
+####Processing TF ChIP-seq label tsv data
 The provided TF ChIP-seq label tsv files have to separated by TF and tissue. Further, the training data is balanced by randomly choosing
 just as many samples from the unbound class as there are for the bound class. 
 Use the script `Preprocessing/Split_and_Balance_ChIP-seq_TSV_files.py` to perform these tasks. 
 
-The command line is:
+In the Preprocessing folder, the command line is:
 ```
 python Split_and_Balance_ChIP-seq_TSV_files.py <Path to TF ChIP-seq label tsv files> <Target directory>
 ```
 
+####Identifiying DNase hypersensitive sites using JAMM
+To run *JAMM* the DNase bam files have to be converted to bed files. As we do not use the replicate mode of JAMM, but call peaks in all available samples
+independently, the bed files have to be distributed in individual folders. This task is carried out by the script `Preprocessing/Convert_Bam_To_Bed.py`.
+This script uses the *bamToBed* command of *bedtools*.
+
+In the Preprocessing folder, the command line is:
+```
+python Convert_Bam_To_Bed.py <Path to DNase Bam files> <Target directory>
+```
+
 ###Computing Transcription Factor affinities using TEPIC
+
 
 ###Predicting Transcription Factor binding in bins
 
+
 ###Preparing the data for submission
 
+
 ##References
+
 
 ##Contact
