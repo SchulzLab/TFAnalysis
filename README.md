@@ -41,13 +41,19 @@ python Split_and_Balance_ChIP-seq_TSV_files.py <Path to TF ChIP-seq label tsv fi
 ####Identifiying DNase hypersensitive sites using JAMM
 To run *JAMM* the DNase bam files have to be converted to bed files. As we do not use the replicate mode of JAMM, but call peaks in all available samples
 independently, the bed files have to be distributed in individual folders. This task is carried out by the script `Preprocessing/Convert_Bam_To_Bed.py`.
-This script uses the *bamToBed* command of *bedtools*.
+This script uses the *bamToBed* tool of *bedtools*.
 
 In the Preprocessing folder, the command line is:
 ```
 python Convert_Bam_To_Bed.py <Path to DNase Bam files> <Target directory>
 ```
 
+To start the actual peak calling, the script `Preprocessing/Call_DHS_Peaks_using_JAMM.py` can be used. Note that you have to put this script either in the *JAMM* folder
+or the script `JAMM.sh` must be in your path. To run this script, use the command:
+
+```
+python Call_DHS_Peaks_using_JAMM.py <Target directory used in Convert_Bam_To_Bed.py> <Target directory for the peak calls> <Genome size file> <Number of corse to use (default 4)>
+```
 ###Computing Transcription Factor affinities using TEPIC
 
 
