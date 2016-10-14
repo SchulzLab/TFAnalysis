@@ -25,7 +25,7 @@ Position Frequency Matrices (PFMs), obtained from Jaspar, Hocomoco, and Uniprobe
 
 ##Step by step guide
 In the following sections, the usage of our pipeline is described step by step.
-
+Please add a **/** after foldernames in the command line arguments.
 ###Data preprocessing
 
 ####Processing TF ChIP-seq label tsv data
@@ -72,7 +72,7 @@ python Combine_DHS_Peaks.py <Output folder for the merged peak set of the tissue
 Transcription factor binding affinities are calculated using the [TEPIC](https://github.com/SchulzLab/TEPIC) method. This has to be started manually on all files containing the merged DHS sites.
 Please check the TEPIC repository for details on the method. 
 
-An example call how TEPIC can be started is:
+Starting TEPIC as follows produces all files which are necessary for further processing:
 ```
 bash TEPIC.sh -g <Reference genome> -b <Merged DHS bed file> -o <Prefix of the output files (including the path)> -p <Position Frequency matrices> -c <Number of cores>
 ```
@@ -88,6 +88,7 @@ python Prepare_TEPIC_Output_For_Intersection.py <Folder containing the output fi
 
 ####Step 3
 Before Transcription Factor (TF) binding can be predicted, the merged TF scores calcuated in DHS sites identified by JAMM have to be intersected with the binned training, leaderboard, and test data sets.
+This script automatically distributs the training data into subfolders per TF. Leaderboard and test data is splitted according to the presence of DHS sites in bins, as only bins with overlapping DHS sites should be classified.
 This can be done by running the script `Preprocessing/Intersect_Bins_And_TF_Predictions.py`. 
 Using *bedtools* *intersect* and the *left outer join* option, each bin will be assigned to the corresponding TF affinities computed within the intersecting DHS.
 
@@ -97,12 +98,29 @@ python Intersect_Bins_And_TF_Predictions.py <Folder holding TF affinities in bed
 ```
 
 ###Predicting Transcription Factor binding in bins
+####Step 1
+Before the random forest models can be trained, the training data files need to be reformated. To shorten the time required for loading the data, the reformatted data is stored as a RData file.
+This is done by the script `Preprocessing/Dump_Training_Data_As_RData.R`.
 
+The command to run the script is:
+```
+Rscript Dump_Training_As_RData.R <Folder holding the subfolders with the training data for all TFs> <Target directory for the RData files>
+```
+####Step 2 Training Random Forests
+To train the random forests, the script `Classification/Train_Random_Forest_Classifiers.py` can be used.
 
+The command is:
+```
+python Train_Random_Forest_Classifiers.py <Folder containing the RData files produced in Step 1> <Target directory to store the learned models>
+```
+####Step 3 Applying Random Forests to Leaderboard and Test data
+To make predictions on the leaderboard and test data sets, the script `Classification/Predict_TF_Binding.py` can be used. This scripts has to be started manually
+for all files, that should be classified.
+
+The command to run the script for one such file is:
+```
+python Predict_TF_Binding.py <File to be classified> <Folder containing the trained random forest models> <Name of the TF for which binding should be predicted> <Target directory to store the predictions> 
+```
 ###Preparing the data for submission
-
-
-##References
-
 
 ##Contact
