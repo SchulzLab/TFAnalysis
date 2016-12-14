@@ -23,6 +23,7 @@ def main():
 		infile=open(args.source[0]+f,"r")
 		header=infile.readline()
 		tissues=header.split()[3:]
+		print(tissues)
 		counter=4
 		infile.close()
 		for t in tissues:
@@ -35,7 +36,7 @@ def main():
 			subprocess.call(command,shell=True)
 			command="awk '{if ($"+str(counter)+"== \"B\") print $0}' "+args.source[0]+f+" > Positive_Temp.txt"
 			subprocess.call(command,shell=True)
-			command="cat Positive_Temp.txt Negative_Temp_Cutted.txt | cut -f 1,2,3,"+str(counter)+" > "+args.destination[1]+str(f.split(".")[0])+"."+t+".Balanced.bed"
+			command="cat Positive_Temp.txt Negative_Temp_Cutted.txt | cut -f 1,2,3,"+str(counter)+" > "+args.destination[0]+str(f.split(".")[0])+"."+t+".Balanced.bed"
 			subprocess.call(command,shell=True)
 			command="rm Positive_Temp.txt"
 			subprocess.call(command,shell=True)

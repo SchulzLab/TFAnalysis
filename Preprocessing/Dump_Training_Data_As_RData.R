@@ -2,7 +2,7 @@
 #It casts all entries to a numeric value, and replaces "." entries by 0.0.
 #To allow for faster reading in R, the data is stored as .RData files
 
-#arg1 Path to the folder containing the Training Data splitted into TF specific subfolders, e.g.:
+#arg1 Path to the folder containing the Training Data split into TF specific subfolders, e.g.:
 #TrainingData/CTCF, TrainingData/REST and so on. This is automatically produced by the script Intersect_Bins_And_TF_Predictions.py
 #arg2 Directory to save the RData files to.
 
@@ -10,7 +10,7 @@
 args<-commandArgs(TRUE)
 
 if (length(args)!=2){
-  print("Usage: <Path to the training data subfolders divided by TF> <Destination path>")
+  stop("Usage: <Path to the training data subfolders divided by TF> <Destination path>")
 }else{
 tfs<-list.files(path=args[1])
 tissues<-list()
@@ -27,16 +27,18 @@ for (i in seq(length(tfs))){
    print(paste("Processing TF",tfs[i]," "))
    temp<-read.table(paste(args[1],paste(tfs[i],tissues[i][[1]][j],sep="/"),sep=""),header=TRUE,stringsAsFactors=FALSE)
    print("Done reading file!")
-   tempFeatures<-sapply(seq(5,464),function(i)as.numeric(temp[,i]))
+   response[[j]]<-temp$response           
+   temp$response <- NULL
+   #tempFeatures<-sapply(seq(5,ncol(temp)),function(i)as.numeric(temp[,i]))
+   tempFeatures<-sapply(seq(2,ncol(temp)),function(i)as.numeric(temp[,i]))
    print("Done casting to numeric!")
    tempFeatures[is.na(tempFeatures)]<-0.0
    print("Done fixing NAs!")
    features[[j]]<-tempFeatures
-   response[[j]]<-temp$Response           
-  }
  allfTFs_X[[1]]<-features
  allfTFs_Y[[1]]<-response
- save(allfTFs_X,file=paste(paste(args[2],tfs[i],sep=""),"_Features_Training.RData",sep=""))
- save(allfTFs_Y,file=paste(paste(args[2],tfs[i],sep=""),"_Response_Training.RData",sep=""))
+ save(allfTFs_X,file=paste(paste(args[2],tfs[i],sep="/"),"_Features_Training.RData",sep=""))
+ save(allfTFs_Y,file=paste(paste(args[2],tfs[i],sep="/"),"_Response_Training.RData",sep=""))
+}
 }
 }
