@@ -3,9 +3,8 @@
 #To allow for faster reading in R, the data is stored as .RData files
 
 #arg1 Path to the folder containing the Training Data split into TF specific subfolders, e.g.:
-#TrainingData/CTCF, TrainingData/REST and so on. This is automatically produced by the script Intersect_Bins_And_TF_Predictions.py
+#TrainingData/CTCF, TrainingData/REST and so on. 
 #arg2 Directory to save the RData files to.
-
 
 args<-commandArgs(TRUE)
 
@@ -25,20 +24,15 @@ for (i in seq(length(tfs))){
   response<-list()
   for (j in seq(length(tissues[i][[1]]))){
    print(paste("Processing TF",tfs[i]," "))
-   temp<-read.table(paste(args[1],paste(tfs[i],tissues[i][[1]][j],sep="/"),sep=""),header=TRUE,stringsAsFactors=FALSE)
+   temp<-read.table(paste(args[1],paste(tfs[i],tissues[i][[1]][j],sep="/"),sep=""),header=TRUE,stringsAsFactors=FALSE,row.names=1)
    print("Done reading file!")
    response[[j]]<-temp$response           
    temp$response <- NULL
-   #tempFeatures<-sapply(seq(5,ncol(temp)),function(i)as.numeric(temp[,i]))
-   tempFeatures<-sapply(seq(2,ncol(temp)),function(i)as.numeric(temp[,i]))
-   print("Done casting to numeric!")
-   tempFeatures[is.na(tempFeatures)]<-0.0
-   print("Done fixing NAs!")
-   features[[j]]<-tempFeatures
- allfTFs_X[[1]]<-features
- allfTFs_Y[[1]]<-response
- save(allfTFs_X,file=paste(paste(args[2],tfs[i],sep="/"),"_Features_Training.RData",sep=""))
- save(allfTFs_Y,file=paste(paste(args[2],tfs[i],sep="/"),"_Response_Training.RData",sep=""))
-}
+   features[[j]]<-temp
+   allfTFs_X[[1]]<-features
+   allfTFs_Y[[1]]<-response
+   save(allfTFs_X,file=paste(paste(args[2],tfs[i],sep="/"),"_Features_Training.RData",sep=""))
+   save(allfTFs_Y,file=paste(paste(args[2],tfs[i],sep="/"),"_Response_Training.RData",sep=""))
+  }
 }
 }

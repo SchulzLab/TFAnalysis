@@ -5,7 +5,6 @@ import argparse
 
 #This script transforms the original ChIPSeq TSV files into bed files separated per TF and tissue.
 #The number of bound samples is not reduced. The number of unbound samples is reduced to the number of present bound samples.
-#
 #arg1: Path to the ChIP-seq tsv files provided at Synapse
 #arg2: Path to write the balanced files to, splitted per TF and Tissue.
 

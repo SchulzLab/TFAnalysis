@@ -4,9 +4,8 @@ import sys
 import argparse
 from sets import Set
 
-#This script faciliates computing the DNase Coverage in the bins specified by the provided bed files.
-#Here, the coverage data is generated for training, leaderboard and test data sets.
-
+#This script faciliates computing the DNase Coverage in the bins specified by the provided bed files
+#Here, the coverage data is generated for training, leaderboard and test data sets
 #arg1: Path to the bam files
 #arg2: Path to the bed files representing the balanced ChIP-seq data for training
 #arg3: Path to the leaderboard regions
@@ -19,9 +18,10 @@ def main():
 	parser.add_argument("bed",nargs=1,help="Path to the ChIP-seq bed files that should be used for intersecting")
 	parser.add_argument("leaderboard",nargs=1,help="Path to the Leaderboard regions")
 	parser.add_argument("test",nargs=1,help="Path to the test regions")
-	parser.add_argument("destination",nargs=1,help="Path to write the bed files too")
+	parser.add_argument("destination",nargs=1,help="Path to write the bed files too, subfolders are created automatically")
 	args=parser.parse_args() 
 
+	#Generating folders
 	command="mkdir "+str(args.destination[0])
 	subprocess.call(command,shell=True)
 
@@ -154,7 +154,6 @@ def main():
 					command="rm "+args.destination[0]+"Training/Center/"+ts[0]+"."+fs[1]+"."+fs[2]+"."+fs[3]+".temp.bed"
 					print(command)
 					subprocess.call(command,shell=True)
-					#Add generation of neighbouring bins
 					command="bedtools coverage -a "+args.bed[0]+ts[0]+"."+ts[1]+".Left.bed -b "+args.bam[0]+f+" | cut -f 1,2,3,4,5 > "+args.destination[0]+"Training/Left/"+ts[0]+"."+fs[1]+".Left."+fs[2]+"."+fs[3]+"temp.bed"
 					print(command)
 					subprocess.call(command,shell=True)
@@ -199,6 +198,7 @@ def main():
 			command="bedtools coverage -a "+args.test[0].replace(".bed",".Right.bed")+" -b "+args.bam[0]+f+" | cut -f 1,2,3,4 > "+args.destination[0]+"Test/Right/Test."+fs[1]+"."+fs[2]+".Right."+fs[3]+".bed"
 			print(command)
 			subprocess.call(command,shell=True)
+
 	#Computing median coverage for Training Files
 	trainingFiles=os.listdir(args.destination[0]+"Training/Center")
 	usedSet=set()
@@ -269,7 +269,8 @@ def main():
 			outputFile=str(args.destination[0])+"Training/Median/Right/"+stFile[0]+"."+stFile[1]+"."+stFile[2]+".Right.Median.Coverage.bed"
 			command="Rscript computeMedianCoverage.R "+fileList+" "+outputFile
 			subprocess.call(command,shell=True)
-#Computing median coverage for Leaderboard Files
+
+	#Computing median coverage for Leaderboard Files
 	trainingFiles=os.listdir(args.destination[0]+"Leaderboard/Center")
 	usedSet=set()
 	for tFile in trainingFiles:

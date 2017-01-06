@@ -1,5 +1,7 @@
 # TFAnalysis
-This project contains our code used to generate the leaderboard and conference round submissions to the _ENCODE DREAM in vivo Transcription Factor Binding Site Prediction Challenge_.
+This project contains our code used to generate the leaderboard, conference and final round submissions to the _ENCODE DREAM in vivo Transcription Factor Binding Site Prediction Challenge_.
+The master branch reflects the code we used for the final round submissions. Tree 53508fd4b0 reflects the state of the code for the conference round.
+The following description  is valid for the final round submission only.
 
 ##Required software
 In order to operate our code on a linux system, the following software must be installed:
@@ -8,27 +10,23 @@ In order to operate our code on a linux system, the following software must be i
 - The _randomForest_ R-package
 - Python (minimum version 2.7)
 - [TEPIC](https://github.com/SchulzLab/TEPIC)
-- [JAMM](https://github.com/mahmoudibrahim/JAMM/releases) version 1.0.7.2
 
-Note that _TEPIC_ and _JAMM_ have additional dependencies. Links to the respective repositories are set up in this project.
+Note that _TEPIC_  has additional dependencies. A link to the respective repository is included in this project.
 
 ##Required data
 To run our scripts, the following data from Synapse must be available in decompressed form:
 - The file *training_data.ChIPseq.tar*
-- The file *training_data.DNASE_wo_bams.tar*
 - The file *training_data.annotations.tar*
 - All DNase bam files stored in the [DNase bams folder at synapse](https://www.synapse.org/#!Synapse:syn6176232)
 
 In addition, the human reference genome in fasta format, version *hg19*, must be available. 
-A [genome size file](Preprocessing/Genome_Size_File_For_JAMM.txt), which is required by *JAMM*,
-is included in the *Preprocessing* folder. 
 Position Frequency Matrices (PFMs), obtained from Jaspar, Hocomoco, and Uniprobe are already included in the _TEPIC_ repository.
 
 ##Step by step guide
 In the following sections, the usage of our pipeline is described step by step.
 Please add a **/** after foldernames in the command line arguments.
-###Data preprocessing
 
+###Data preprocessing
 ####Processing TF ChIP-seq label tsv data
 The provided TF ChIP-seq label tsv files are separated by TF and tissue. Further, the training data is balanced by randomly choosing
 just as many samples from the unbound class as there are for the bound class. 
@@ -39,103 +37,182 @@ In the Preprocessing folder, the command line is:
 python Split_and_Balance_ChIP-seq_TSV_files.py <Folder containing the TF ChIP-seq label tsv files> <Target directory>
 ```
 
-####Identifiying DNase hypersensitive sites using JAMM
-#####Step 1
-To run *JAMM* the DNase bam files have to be converted to bed files. As we do not use the replicate mode of JAMM, but call peaks in all available samples
-independently, the bed files have to be distributed in individual folders. This task is carried out by the script `Preprocessing/Convert_Bam_To_Bed.py`.
-This script uses the *bamToBed* tool of *bedtools*.
-
-In the Preprocessing folder, the command line is:
+###Computing DNase coverage in Bins
+We compute the DNase coverage in all bins used for training, testing, and the leaderboard data using the python script `Preprocessing/Compute_DNase_Coverage.py`
+To compute the coverage, execute the following command in the Preprocessing folder.
 ```
-python Convert_Bam_To_Bed.py <Folder containing the DNase Bam files> <Target directory>
+python Compute_DNase_Coverage.py <Path to the DNase bam files> <Path to the directory containing the balanced ChIP-seq labels> <File containing the leaderboard regions> <File containing the test regions>  <Target directory>
 ```
 
-#####Step 2
-To start the actual peak calling, the script `Preprocessing/Call_DHS_Peaks_using_JAMM.py` can be used. Note that you have to put this script either in the *JAMM* folder
-or the script `JAMM.sh` must be in your path. 
+We use the _bedtools coverage_ tool to compute the DNase coverage in the bins from the DNase bam files. 
+In case that several DNase replicates are available for one tissue, the median coverage over all replicates will be computed. 
+This is done by the Rscript `Preprocessing/computeMedianCoverage.R`.
+In addition to the actual bins, we compute the DNase coverage for their left and right neighbouring bins. To simplify the merging process later on,
+we generate additional files that contain the coordinates of the right and the left bins with respect to the original file and compute the coverage for those bins too.
 
-To run this script, use the command:
-```
-python Call_DHS_Peaks_using_JAMM.py <Target directory used in Convert_Bam_To_Bed.py> <Target directory for the peak calls> <Genome size file> <Number of corse to use (default 4)>
-```
-
-#####Step 3
-Once the peak calling using *JAMM* is finished, the individual peak calls per tissue have to be merged and stored in one file. This can be achieved by running the script
-`Preprocessing/Combine_DHS_Peaks.py`. Note that the script has to be started manually for all tissues. Merging the peaks is done by the *bedtools* *merge* command. 
-
-The command line for this tool is:
-```
-python Combine_DHS_Peaks.py <Output folder for the merged peak set of the tissue of interest> <1th peak file of the tissue of interest> ... <nth peak file of the tissue of interest>
-```
+Note that this computation can take several hours; it also requires at least 500GB of main memory, as some DNase bam files are very large.
 
 ###Computing Transcription Factor affinities using TEPIC
-####Step 1
 Transcription factor binding affinities are calculated using the [TEPIC](https://github.com/SchulzLab/TEPIC) method. 
 These affinities will be later used in a random forest model as features to predict the binding of a distinct TF.
-*TEPIC* has to be started manually on all files containing the merged DHS sites.
+*TEPIC* has to be started manually on all labelled ChIP-seq bed files as well as on the leaderboard and test data bins.
 Please check the TEPIC repository for details on the method. 
 
 Starting TEPIC as follows produces all files which are necessary for further processing:
 ```
-bash TEPIC.sh -g <Reference genome> -b <Merged DHS bed file> -o <Prefix of the output files (including the path)> -p <Position frequency matrices> -c <Number of cores>
+bash TEPIC.sh -g <Reference genome> -b <Bed file> -o <Prefix of the output files (including the path)> -p <Position frequency matrices> -c <Number of cores>
 ```
 
-####Step 2
-The output of TEPIC needs to be transformed to a bed file like structure. In addition, the files containing the DNaseI coverage in DHS sites and the unscaled TF affinities have to be merged to one file.
-This is done by the script `Preprocessing/Prepare_TEPIC_Output_For_Intersection.py`.
+###Merging Transcription Factor affinities and DNase data for Model training.
+We provide a Python script to combine the TEPIC annotations with the DNase coverage data:
+`Preprocessing/IntegrateTraining.py`
 
-The command to run the script is:
+To integrate the Test data, use the following command in the Preprocessing folder:
 ```
-python Prepare_TEPIC_Output_For_Intersection.py <Folder containing the output files of TEPIC>
+python IntegrateTraining.py <Path to the TEPIC annotations of the training data> <Path to the DNase coverage data for the middle bins> <Path to the DNase coverage data for the left bins> <Path to the DNase coverage data for the right bins> <Target directory>
 ```
+The files `Preprocessing/headerC.txt`, `Preprocessing/headerC_TL.txt`,`Preprocessing/headerL.txt`, and `Preprocessing/headerR.txt` are required to generate the correct headers while merging the data. 
+Both leaderboard data and test data will be integrated later.
 
-####Step 3
-Before Transcription Factor (TF) binding can be predicted, the merged TF scores calcuated in DHS sites identified by JAMM have to be intersected with the binned training, leaderboard, and test data sets.
-This script automatically distributs the training data into subfolders per TF. 
-Leaderboard and test data is splitted according to the presence of DHS sites in bins as only bins with overlapping DHS sites can be classified.
-This can be done by running the script `Preprocessing/Intersect_Bins_And_TF_Predictions.py`. 
-Using *bedtools* *intersect* and the *left outer join* option, each bin will be assigned to the corresponding TF affinities computed within the intersecting DHS.
 
-The command to run the script is:
-```
-python Intersect_Bins_And_TF_Predictions.py <Folder holding TF affinities in bed format> <Folder containing the balanced training regions of all tissues and TFs> <Bed file holding the leaderboard regions as provided on synapse> <Bed file holding the test regions as provided on Synapse> <Target directory to write the intersected files to>
-```
-
-###Predicting Transcription Factor binding in bins
-####Step 1
-Before the random forest models can be trained, the training data files need to be reformated. To shorten the time required for loading the data, the reformatted data is stored as a RData file.
+###Predicting Transcription Factor binding in bins using the full feature set
+####Step 1 Generating RData files
+Before the random forest models can be trained, the training data files need to be reformatted. 
+To shorten the time required for loading the data, the reformatted data is stored as a RData file.
 This is done by the script `Preprocessing/Dump_Training_Data_As_RData.R`.
 
 The command to run the script is:
 ```
 Rscript Dump_Training_As_RData.R <Folder holding the subfolders with the training data for all TFs> <Target directory for the RData files>
 ```
-####Step 2 Training Random Forests
-To train the random forests, the script `Classification/Train_Random_Forest_Classifiers.py` can be used.
-We learn 4500 trees and use the default values
-for cross validation. We had to reduce the amount of training data to only 8% of each class to make the learning feasible in terms of memory usage.
 
+####Step 2 Training Random Forests
+NEEDS CHANGES:
+To train the random forests, the script `Classification/Train_Random_Forest_Classifiers.py` can be used.
+END NEEDS CHANGES.
+
+We learn 4500 trees and use the default values for cross validation. 
+We had to reduce the amount of training data to 30.000 bound and unbound samples of each class to make the learning feasible in terms of memory usage and
+Fortran memory limitations.
+
+NEEDS CHANGES:
 The command is:
 ```
 python Train_Random_Forest_Classifiers.py <Folder containing the RData files produced in Step 1> <Target directory to store the learned models>
 ```
-####Step 3 Applying Random Forests to Leaderboard and Test data
-To make predictions on the leaderboard and test data sets, the script `Classification/Predict_TF_Binding.py` can be used. This scripts has to be started manually
-for all files that should be classified.
+END NEEDS CHANGES.
+If several tissues are available for training, we learn one random forest for each tissue. Next, an ensemble random forest will be trained using the output
+of the individual classifiers. 
 
-The command to run the script for one such file is:
+Due to space constraints, we can not use the full feature space for predictions on leaderboard and test data. 
+Therefore, we use the feature importance of the learned models to determine which features should be used subsequently.
+For each tissue that is avaiable as a training data set, we consider the top 20 TF features. The union of those will be used later on for that particular TF.
+Text files containing the relevant features are produced automatically.
+
+###Shrink the feature space
+We use the files containing the top TFs to generate the final TF features for our models. We have three scripts to extract the suitable
+data from training, leaderboard and test files: `Preprocessing/CutTrainingData.py`, `Preprocessing/CutLeaderboardData.py` , `Preprocessing/CutTestData.py`
+
+To shrink the training data run the following command in the Preprocessing folder:
 ```
-python Predict_TF_Binding.py <File to be classified> <Folder containing the trained random forest models> <Name of the TF for which binding should be predicted> <Target directory to store the predictions> 
+python CutTrainingData.py <Path to the complete TF annotations used for training> <Path to the files containing the TFs that should be kept> < Target directory>
 ```
-###Preparing data for submission
-In order to reformat the data such that it sufficies the requirements of the challenge, the classification results are reformatted using the script `Postprocessing/Prepare_Predictions_For_Submission.py`.
-The script combines the classified data with the remaining files that contain bins without overlaping DHS sites. 
-Further, the data is sorted and stored according to the challenge naming conventions.
+
+To generate the TF data for the leaderboard round run the following command:
+```
+python CutLeaderboardData.py <Path containing the complete TF annotation of the leaderboard data> <Path to the files containing the TFs that should be kept> < Target directory>
+```
+
+To generate the TF data for the final round run the following command:
+```
+python CutTestData.py <Path containing the complete TF annotation of the test data> <Path to the files containing the TFs that should be kept> < Target directory>
+```
+
+###Merge TF annotations and DNase data for Training data, Leaderboard data, and Test data
+Before we can retrain the models and apply them to the Leadeboard and the Test data, we have to merge the TF affinities and the DNase data again.
+We provide three individual Python scripts to combine the TEPIC annotations with the DNase coverage data:
+`Preprocessing/IntegrateTraining.py`, `Preprocessing/IntegrateLeaderboard.py`, `Preprocessing/IntegrateTest.py`
+
+To integrate the new Training data, use the following command in the Preprocessing folder:
+```
+python IntegrateTraining.py <Path to the reduced TEPIC annotations of the training data> <Path to the DNase coverage data for the middle bins computed in the training regions> <Path to the DNase coverage data for the left bins computed in the training regions> <Path to the DNase coverage data for the right bins computed in the training regions> <Target directory>
+```
+
+To integrate the Leaderboard data, use the following command in the Preprocessing folder:
+```
+python IntegrateLeaderboard.py <Path to the reduced TEPIC annotations of the leaderboard data> <Path to the DNase coverage data for the middle bins computed in the leaderboard regions> <Path to the DNase coverage data for the left bins computed in the leaderboard regions> <Path to the DNase coverage data for the right bins computed in the leaderboard regions> <Target directory>
+```
+
+To integrate the Test data, use the following command in the Preprocessing folder:
+```
+python IntegrateTest.py <Path to the reduced TEPIC annotations of the test data> <Path to the DNase coverage data for the middle bins computed in the test regions> <Path to the DNase coverage data for the left bins computed in the training regions> <Path to the DNase coverage data for the right bins computed in the test regions> <Target directory>
+```
+
+###Computing maximisied TF features
+In addition to shrink the feature space, we found that the performance of the random forests are improved when one considers the maximum affinity value for a TF in all adjacent bound training samples instead of the original values.
+This transformation is performed by the script `Preprocessing/ConvertTrainingDataToMaxAffinityFormat.py`.
+
+The command line to run this script is:
+```
+python ConvertTrainingDataToMaxAffinityFormat.py <Path to the shrunken, integrated, Training data sets> <Target directory>
+```
+
+Similar to the maximum affinity transformation we perform on the Training data, we also reprocessed the Leaderboard and Test data. 
+Here, for a center bin _i_ we determine a new value by searching for the maximum value in the 2 upstream bins _i-2_, _i-1_, in the downstream bins _i+1_, and  _i+2_ as well as in bin 
+_i_ itself.
+
+This is done using a first in first out queue in the script `Preprocessing/ConvertMaxLeaderboardTest.py`
+```
+python ConvertMaxLeaderboardTest.py <Path to either the shrunken, integrated, Test or Leaderboard Files> <Target directory>
+```
+Note that this script runs about 14 hours on the test data.
+
+###Retrain the models
+####Step 1 Generating RData files
+As above, before the random forest models can be trained, the training data files need to be reformatted and RData files are created.
+Again, this is done by the script `Preprocessing/Dump_Training_Data_As_RData.R`.
 
 The command to run the script is:
 ```
+Rscript Dump_Training_As_RData.R <Folder holding the subfolders with the shrunken training data for all TFs> <Target directory for the RData files>
+```
+
+####Step 2 Learn models
+NEEDS CHANGES:
+To train the random forests, the script `Classification/Train_Random_Forest_Classifiers.py` can be used.
+END NEEDS CHANGES.
+We use the same parameteres as above.
+
+NEEDS CHANGES:
+The command is:
+```
+python Train_Random_Forest_Classifiers.py <Folder containing the RData files produced in Step 1> <Target directory to store the learned models>
+```
+END NEEDS CHANGES.
+
+
+###Apply them to Leaderboard data and Test data
+To make predictions on the leaderboard and test data sets, the script NEEDS-CHANGES`Classification/Predict_TF_Binding.py`END-NEEDS-CHANGES can be used. 
+This scripts has to be started manually for all files that should be classified.
+
+The command to run the script for one such file is:
+NEEDS CHANGES
+```
+python Predict_TF_Binding.py <File to be classified> <Folder containing the trained random forest models> <Name of the TF for which binding should be predicted> <Target directory to store the predictions> 
+```
+END NEEDS CHANGES
+
+###Preparing data for submission
+In order to reformat the data such that it sufficies the requirements of the challenge, the classification results are reformatted using the script 
+NEEDS CHANGES`Postprocessing/Prepare_Predictions_For_Submission.py`. END NEEDS CHANGES
+Here, the data is sorted and stored according to the challenge naming conventions.
+
+The command to run the script is:
+NEEDS CHANGES
+```
 python Prepare_Predictions_For_Submission.py <Folder containing the classified files> <Folder containing the files without overlapping DHS sites> <Target directory> <F for Final round submission, L for Leaderboard submission>
 ```
+END NEEDS CHANGES
 
 ##Contact
 Please contact *fbejhati[at]mmci.uni-saarland.de* or *fschmidt[at]mmci.uni-saarland.de* in case of questions.
