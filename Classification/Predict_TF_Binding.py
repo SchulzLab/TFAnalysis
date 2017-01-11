@@ -10,6 +10,7 @@ from sets import Set
 #arg3: Name of the TF for which the predictions should be made.
 #arg4: Output folder for the predictions.
 
+
 def main():
 	parser=argparse.ArgumentParser(prog="Predict_TF_Binding.py")
 	parser.add_argument("Tissue",nargs=1,help="TF annotation file on which TF binding should be predicted")
@@ -22,7 +23,7 @@ def main():
 		command="mkdir "+args.Destination[0]
 		os.system(command)
 
-	command="R3script Internal-Rscripts/Predict_TF_Binding_Using_Random_Forest_Classifiers.R " +args.TF[0]+" "+args.Tissue[0]+" "+args.Destination[0]+args.TF[0]+".txt "+args.RandomForests[0]
+	command="R3script Internal-Rscripts/Predict_TF_Binding_Using_Random_Forest_Classifiers.R " +args.TF[0]+" "+args.Tissue[0]+" "+args.Destination[0]+args.TF[0]+" "+args.RandomForests[0]
 	print(command)
 	os.system(command)
 		

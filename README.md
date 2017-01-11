@@ -76,7 +76,7 @@ Both leaderboard data and test data will be integrated later.
 
 
 ###Predicting Transcription Factor binding in bins using the full feature set
-####Step 1 Generating RData files
+####Step 1.1 Generating RData files
 Before the random forest models can be trained, the training data files need to be reformatted. 
 To shorten the time required for loading the data, the reformatted data is stored as a RData file.
 This is done by the script `Preprocessing/Dump_Training_Data_As_RData.R`.
@@ -85,29 +85,31 @@ The command to run the script is:
 ```
 Rscript Dump_Training_As_RData.R <Folder holding the subfolders with the training data for all TFs> <Target directory for the RData files>
 ```
-
-####Step 2 Training Random Forests
-NEEDS CHANGES:
-To train the random forests, the script `Classification/Train_Random_Forest_Classifiers.py` can be used.
-END NEEDS CHANGES.
+####Step 1.2 Training Random Forests
+To train the random forests, the script `Classification/Train_Random_Forest_Classifiers_Full_Feature_Space.py` can be used.
 
 We learn 4500 trees and use the default values for cross validation. 
-We had to reduce the amount of training data to 30.000 bound and unbound samples of each class to make the learning feasible in terms of memory usage and
+We had to reduce the amount of training data to 30,000 bound and unbound samples of each class to make the learning feasible in terms of memory usage and
 Fortran memory limitations.
 
-NEEDS CHANGES:
 The command is:
 ```
-python Train_Random_Forest_Classifiers.py <Folder containing the RData files produced in Step 1> <Target directory to store the learned models>
+python Train_Random_Forest_Classifiers_Full_Feature_Space.py  <Folder containing the RData files containing features with the full feature space, produced in Step 1.1> <Target directory to store the output>
 ```
-END NEEDS CHANGES.
-If several tissues are available for training, we learn one random forest for each tissue. Next, an ensemble random forest will be trained using the output
-of the individual classifiers. 
-
 Due to space constraints, we can not use the full feature space for predictions on leaderboard and test data. 
 Therefore, we use the feature importance of the learned models to determine which features should be used subsequently.
-For each tissue that is avaiable as a training data set, we consider the top 20 TF features. The union of those will be used later on for that particular TF.
-Text files containing the relevant features are produced automatically.
+For each tissue that is avaiable as a training data set, we consider the top 20 features. The union of those will be used later to learn a model for that particular TF.
+This script learns the models on all RData files that are present in the given directory.
+
+###Determine the top features
+To determine the top features, use the script `Classification/Get_Feature_Importance_From_Full_Models.py`.
+The features are extracted from the RFs trained in Step 1.2.
+
+The command is:
+```
+python Get_Feature_Importance_From_Full_Models.py <Target directory> <Path to the integrated files (txt) on full feature space> <Path to the RData file that should be processed> <Name of the TF that should be analysed>
+```
+Note that this must be called individually on all RData files and TFs for which the reduced feature space should be produced.
 
 ###Shrink the feature space
 We use the files containing the top TFs to generate the final TF features for our models. We have three scripts to extract the suitable
@@ -168,7 +170,7 @@ python ConvertMaxLeaderboardTest.py <Path to either the shrunken, integrated, Te
 Note that this script runs about 14 hours on the test data.
 
 ###Retrain the models
-####Step 1 Generating RData files
+####Step 2.1 Generating RData files
 As above, before the random forest models can be trained, the training data files need to be reformatted and RData files are created.
 Again, this is done by the script `Preprocessing/Dump_Training_Data_As_RData.R`.
 
@@ -177,42 +179,33 @@ The command to run the script is:
 Rscript Dump_Training_As_RData.R <Folder holding the subfolders with the shrunken training data for all TFs> <Target directory for the RData files>
 ```
 
-####Step 2 Learn models
-NEEDS CHANGES:
-To train the random forests, the script `Classification/Train_Random_Forest_Classifiers.py` can be used.
-END NEEDS CHANGES.
+####Step 2.2 Learn models
+To train the random forests, the script `Classification/Train_Random_Forest_Classifiers_Reduced_Feature_Space.py` can be used.
 We use the same parameteres as above.
 
-NEEDS CHANGES:
 The command is:
 ```
-python Train_Random_Forest_Classifiers.py <Folder containing the RData files produced in Step 1> <Target directory to store the learned models>
+python Train_Random_Forest_Classifiers_Reduced_Feature_Space.py <Folder containing the RData files produced in Step 2.1> <Target directory to store the learned models>
 ```
-END NEEDS CHANGES.
-
+This learns models for all RData files that are present in the given directory.
 
 ###Apply them to Leaderboard data and Test data
-To make predictions on the leaderboard and test data sets, the script NEEDS-CHANGES`Classification/Predict_TF_Binding.py`END-NEEDS-CHANGES can be used. 
+To make predictions on the leaderboard and test data sets, the script `Classification/Predict_TF_Binding.py` can be used. 
 This scripts has to be started manually for all files that should be classified.
 
 The command to run the script for one such file is:
-NEEDS CHANGES
 ```
 python Predict_TF_Binding.py <File to be classified> <Folder containing the trained random forest models> <Name of the TF for which binding should be predicted> <Target directory to store the predictions> 
 ```
-END NEEDS CHANGES
 
 ###Preparing data for submission
 In order to reformat the data such that it sufficies the requirements of the challenge, the classification results are reformatted using the script 
-NEEDS CHANGES`Postprocessing/Prepare_Predictions_For_Submission.py`. END NEEDS CHANGES
-Here, the data is sorted and stored according to the challenge naming conventions.
+`Postprocessing/Submission_Format.bash`.
+Here, the data is sorted, renamed and stored according to the challenge conventions.
 
 The command to run the script is:
-NEEDS CHANGES
 ```
-python Prepare_Predictions_For_Submission.py <Folder containing the classified files> <Folder containing the files without overlapping DHS sites> <Target directory> <F for Final round submission, L for Leaderboard submission>
+bash Submission_Format.bash <TF name> <Tissue name> <File to reformat> <F for Final round submission, L for Leaderboard submission>
 ```
-END NEEDS CHANGES
-
 ##Contact
 Please contact *fbejhati[at]mmci.uni-saarland.de* or *fschmidt[at]mmci.uni-saarland.de* in case of questions.
