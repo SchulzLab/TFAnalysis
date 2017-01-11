@@ -151,8 +151,6 @@ process_and_predict_testFile2 = function(filepath,rf) {
 
 tf_rf_path <- Sys.glob(paste(rfs_path,tf_name,"*4500*.RData",sep=""))
 load(tf_rf_path)
-print(ls())
 library(randomForest)
-print(rfs[[1]]$confusion)
 preds <- process_and_predict_testFile(tf_test_path)
 write.table(preds,out_path,sep="\t",quote=F,row.names=F,col.names=F)

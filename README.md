@@ -58,7 +58,7 @@ These affinities will be later used in a random forest model as features to pred
 *TEPIC* has to be started manually on all labelled ChIP-seq bed files as well as on the leaderboard and test data bins.
 Please check the TEPIC repository for details on the method. 
 
-Starting TEPIC as follows produces all files which are necessary for further processing:
+Starting TEPIC as follows produces all files for one TF which are necessary for its further processing:
 ```
 bash TEPIC.sh -g <Reference genome> -b <Bed file> -o <Prefix of the output files (including the path)> -p <Position frequency matrices> -c <Number of cores>
 ```
@@ -195,7 +195,7 @@ This scripts has to be started manually for all files that should be classified.
 
 The command to run the script for one such file is:
 ```
-python Predict_TF_Binding.py <File to be classified> <Folder containing the trained random forest models> <Name of the TF for which binding should be predicted> <Target directory to store the predictions> 
+python Predict_TF_Binding.py <File to be classified> <Folder containing the trained random forest models from Step 2.2> <Name of the TF for which binding should be predicted> <Target directory to store the predictions> 
 ```
 
 ###Preparing data for submission
