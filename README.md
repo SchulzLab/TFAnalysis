@@ -1,7 +1,7 @@
 # TFAnalysis
-This project contains our code used to generate the leaderboard, conference and final round submissions to the _ENCODE DREAM in vivo Transcription Factor Binding Site Prediction Challenge_.
-The master branch reflects the code we used for the final round submissions. Tree 53508fd4b0 reflects the state of the code for the conference round.
-The following description  is valid for the final round submission only.
+This project contains our code used to generate the leaderboard, conference, and final round submissions to the _ENCODE DREAM in vivo Transcription Factor Binding Site Prediction Challenge_.
+The master branch reflects the code we used for the final-round submissions. Tree 53508fd4b0 reflects the state of the code for the conference-round.
+The following description  is valid for the final-round submission only.
 
 ##Required software
 In order to operate our code on a linux system, the following software must be installed:
@@ -46,7 +46,7 @@ python Compute_DNase_Coverage.py <Path to the DNase bam files> <Path to the dire
 
 We use the _bedtools coverage_ tool to compute the DNase coverage in the bins from the DNase bam files. 
 In case that several DNase replicates are available for one tissue, the median coverage over all replicates will be computed. 
-This is done by the Rscript `Preprocessing/computeMedianCoverage.R`.
+This is done by the RScript `Preprocessing/computeMedianCoverage.R`.
 In addition to the actual bins, we compute the DNase coverage for their left and right neighbouring bins. To simplify the merging process later on,
 we generate additional files that contain the coordinates of the right and the left bins with respect to the original file and compute the coverage for those bins too.
 
@@ -101,7 +101,7 @@ Therefore, we use the feature importance of the learned models to determine whic
 For each tissue that is avaiable as a training data set, we consider the top 20 features. The union of those will be used later to learn a model for that particular TF.
 This script learns the models on all RData files that are present in the given directory.
 
-###Determine the top features
+###Determine top features
 To determine the top features, use the script `Classification/Get_Feature_Importance_From_Full_Models.py`.
 The features are extracted from the RFs trained in Step 1.2.
 
@@ -199,9 +199,9 @@ python Predict_TF_Binding.py <File to be classified> <Folder containing the trai
 ```
 
 ###Preparing data for submission
-In order to reformat the data such that it sufficies the requirements of the challenge, the classification results are reformatted using the script 
+In order to reformat the data such that it sufficies the requirements of the challenge, use the script 
 `Postprocessing/Submission_Format.bash`.
-Here, the data is sorted, renamed and stored according to the challenge conventions.
+Here, the data is sorted, renamed,and stored according to the challenge conventions.
 
 The command to run the script is:
 ```
