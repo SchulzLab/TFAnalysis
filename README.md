@@ -1,10 +1,10 @@
 # TFAnalysis
-This project contains our code used to generate the leaderboard, conference, and final round submissions to the _ENCODE DREAM in vivo Transcription Factor Binding Site Prediction Challenge_.
+This project contains our code used for generating the leaderboard, conference, and final round submissions to the _ENCODE DREAM in vivo Transcription Factor Binding Site Prediction Challenge_.
 The master branch reflects the code we used for the final-round submissions. Tree 53508fd4b0 reflects the state of the code for the conference-round.
 The following description  is valid for the final-round submission only.
 
 ##Required software
-In order to operate our code on a linux system, the following software must be installed:
+In order to operate our code on a linux system, the following softwares must be installed:
 - [bedtools](https://github.com/arq5x/bedtools2) (minimum version 2.25.0)
 - R (minimum version 3.x.x)
 - The _randomForest_ R-package
@@ -88,7 +88,7 @@ Rscript Dump_Training_As_RData.R <Folder holding the subfolders with the trainin
 ####Step 1.2 Training Random Forests
 To train the random forests, the script `Classification/Train_Random_Forest_Classifiers_Full_Feature_Space.py` can be used.
 
-We learn 4500 trees and use the default values for cross validation. 
+We learn 4,500 trees and use the default values for cross validation. 
 We had to reduce the amount of training data to 30,000 bound and unbound samples of each class to make the learning feasible in terms of memory usage and
 Fortran memory limitations.
 
@@ -156,7 +156,7 @@ This transformation is performed by the script `Preprocessing/ConvertTrainingDat
 
 The command line to run this script is:
 ```
-python ConvertTrainingDataToMaxAffinityFormat.py <Path to the shrunken, integrated, Training data sets> <Target directory>
+python ConvertTrainingDataToMaxAffinityFormat.py <Path to the shrunk, integrated, Training data sets> <Target directory>
 ```
 
 Similar to the maximum affinity transformation we perform on the Training data, we also reprocessed the Leaderboard and Test data. 
@@ -165,7 +165,7 @@ _i_ itself.
 
 This is done using a first in first out queue in the script `Preprocessing/ConvertMaxLeaderboardTest.py`
 ```
-python ConvertMaxLeaderboardTest.py <Path to either the shrunken, integrated, Test or Leaderboard Files> <Target directory>
+python ConvertMaxLeaderboardTest.py <Path to either the shrunk, integrated, Test or Leaderboard Files> <Target directory>
 ```
 Note that this script runs about 14 hours on the test data.
 
@@ -176,7 +176,7 @@ Again, this is done by the script `Preprocessing/Dump_Training_Data_As_RData.R`.
 
 The command to run the script is:
 ```
-Rscript Dump_Training_As_RData.R <Folder holding the subfolders with the shrunken training data for all TFs> <Target directory for the RData files>
+Rscript Dump_Training_As_RData.R <Folder holding the subfolders with the shrunk training data for all TFs> <Target directory for the RData files>
 ```
 
 ####Step 2.2 Learn models
@@ -191,7 +191,7 @@ This learns models for all RData files that are present in the given directory.
 
 ###Apply them to Leaderboard data and Test data
 To make predictions on the leaderboard and test data sets, the script `Classification/Predict_TF_Binding.py` can be used. 
-This scripts has to be started manually for all files that should be classified.
+This script has to be started manually for all files that should be classified.
 
 The command to run the script for one such file is:
 ```
@@ -199,9 +199,9 @@ python Predict_TF_Binding.py <File to be classified> <Folder containing the trai
 ```
 
 ###Preparing data for submission
-In order to reformat the data such that it sufficies the requirements of the challenge, use the script 
+In order to reformat the data such that it fullfills the requirements of the challenge, use the script 
 `Postprocessing/Submission_Format.bash`.
-Here, the data is sorted, renamed,and stored according to the challenge conventions.
+Here, the data is sorted, renamed, and stored according to the challenge conventions.
 
 The command to run the script is:
 ```
