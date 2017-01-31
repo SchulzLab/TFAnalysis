@@ -198,7 +198,6 @@ def main():
 			command="bedtools coverage -a "+args.test[0].replace(".bed",".Right.bed")+" -b "+args.bam[0]+f+" | cut -f 1,2,3,4 > "+args.destination[0]+"Test/Right/Test."+fs[1]+"."+fs[2]+".Right."+fs[3]+".bed"
 			print(command)
 			subprocess.call(command,shell=True)
-
 	#Computing median coverage for Training Files
 	trainingFiles=os.listdir(args.destination[0]+"Training/Center")
 	usedSet=set()
@@ -208,7 +207,7 @@ def main():
 		if (tFile not in usedSet):
 			usedSet.add(tFile)
 			fittingFile.add(tFile)
-			for tFile2 in trainingFiles:
+				for tFile2 in trainingFiles:
 				if (tFile2 not in usedSet):
 					if (tFile != tFile2):
 						stFile2=tFile2.split(".")
@@ -219,8 +218,8 @@ def main():
 			fileList=""
 			for element in list(fittingFile):
 				fileList+=str(args.destination[0])+"Training/Center/"+str(element)+" "
-			outputFile=str(args.destination[0])+"Training/Median/"+stFile[0]+"."+stFile[1]+"."+stFile[2]+".Center.Median.Coverage.bed"
-			command="Rscript computeMedianCoverage.R "+fileList+" "+outputFile
+			outputFile=str(args.destination[0])+"Training/Median/Middle/"+stFile[0]+"."+stFile[1]+"."+stFile[2]+".Center.Median.Coverage.bed"
+			command="Rscript computeMedianCoverageTrain.R "+fileList+" "+outputFile
 			print(command)
 			subprocess.call(command,shell=True)
 				
@@ -294,7 +293,7 @@ def main():
 			command="Rscript computeMedianCoverage.R "+fileList+" "+outputFile
 			print(command)
 			subprocess.call(command,shell=True)
-				
+			
 	trainingFiles=os.listdir(args.destination[0]+"Leaderboard/Left")
 	usedSet=set()
 	for tFile in trainingFiles:
