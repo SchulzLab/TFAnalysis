@@ -38,6 +38,7 @@ def main():
 					comp=str(sh[i].upper())	
 					if(comp in cutSet):
 							temp=temp+","+str(i+2)
+				temp+=","+str(len(sh)-2)
 				integratedFile.close()
 				command=temp+" "+args.integratedData[0]+iFiles+" > "+args.outPath[0]+iFiles.replace(".txt","_cut.txt")
 				print(command)

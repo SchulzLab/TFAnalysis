@@ -132,13 +132,9 @@ python CutTestData.py <Path containing the complete TF annotation of the test da
 
 ###Merge TF annotations and DNase data for Training data, Leaderboard data, and Test data
 Before we can retrain the models and apply them to the Leadeboard and the Test data, we have to merge the TF affinities and the DNase data again.
-We provide three individual Python scripts to combine the TEPIC annotations with the DNase coverage data:
-`Preprocessing/IntegrateTraining.py`, `Preprocessing/IntegrateLeaderboard.py`, `Preprocessing/IntegrateTest.py`
+We provide two individual Python scripts to combine the TEPIC annotations with the DNase coverage data:
+`Preprocessing/IntegrateLeaderboard.py`, `Preprocessing/IntegrateTest.py`
 
-To integrate the new Training data, use the following command in the Preprocessing folder:
-```
-python IntegrateTraining.py <Path to the reduced TEPIC annotations of the training data> <Path to the DNase coverage data for the middle bins computed in the training regions> <Path to the DNase coverage data for the left bins computed in the training regions> <Path to the DNase coverage data for the right bins computed in the training regions> <Target directory>
-```
 
 To integrate the Leaderboard data, use the following command in the Preprocessing folder:
 ```
