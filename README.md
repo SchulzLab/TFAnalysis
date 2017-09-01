@@ -3,7 +3,7 @@ This project contains our code used for generating the leaderboard, conference, 
 The master branch reflects the code we used for the final-round submissions. Tree 53508fd4b0 reflects the state of the code for the conference-round.
 The following description  is valid for the final-round submission only.
 
-##Required software
+## Required software
 In order to operate our code on a linux system, the following softwares must be installed:
 - [bedtools](https://github.com/arq5x/bedtools2) (minimum version 2.25.0)
 - R (minimum version 3.x.x)
@@ -13,7 +13,7 @@ In order to operate our code on a linux system, the following softwares must be 
 
 Note that _TEPIC_  has additional dependencies. A link to the respective repository is included in this project.
 
-##Required data
+## Required data
 To run our scripts, the following data from Synapse must be available in decompressed form:
 - The file *training_data.ChIPseq.tar*
 - The file *training_data.annotations.tar*
@@ -22,12 +22,12 @@ To run our scripts, the following data from Synapse must be available in decompr
 In addition, the human reference genome in fasta format, version *hg19*, must be available. 
 Position Frequency Matrices (PFMs), obtained from Jaspar, Hocomoco, and Uniprobe are already included in the _TEPIC_ repository.
 
-##Step by step guide
+## Step by step guide
 In the following sections, the usage of our pipeline is described step by step.
 Please add a **/** after foldernames in the command line arguments.
 
-###Data preprocessing
-####Processing TF ChIP-seq label tsv data
+### Data preprocessing
+#### Processing TF ChIP-seq label tsv data
 The provided TF ChIP-seq label tsv files are separated by TF and tissue. Further, the training data is balanced by randomly choosing
 just as many samples from the unbound class as there are for the bound class. 
 Use the script `Preprocessing/Split_and_Balance_ChIP-seq_TSV_files.py` to perform these tasks. 
@@ -37,7 +37,7 @@ In the Preprocessing folder, the command line is:
 python Split_and_Balance_ChIP-seq_TSV_files.py <Folder containing the TF ChIP-seq label tsv files> <Target directory>
 ```
 
-###Computing DNase coverage in Bins
+### Computing DNase coverage in Bins
 We compute the DNase coverage in all bins used for training, testing, and the leaderboard data using the python script `Preprocessing/Compute_DNase_Coverage.py`
 To compute the coverage, execute the following command in the Preprocessing folder.
 ```
@@ -52,7 +52,7 @@ we generate additional files that contain the coordinates of the right and the l
 
 Note that this computation can take several hours; it also requires at least 500GB of main memory, as some DNase bam files are very large.
 
-###Computing Transcription Factor affinities using TEPIC
+### Computing Transcription Factor affinities using TEPIC
 Transcription factor binding affinities are calculated using the [TEPIC](https://github.com/SchulzLab/TEPIC) method. 
 These affinities will be later used in a random forest model as features to predict the binding of a distinct TF.
 *TEPIC* has to be started manually on all labelled ChIP-seq bed files as well as on the leaderboard and test data bins.
@@ -63,7 +63,7 @@ Starting TEPIC as follows produces all files for one TF which are necessary for 
 bash TEPIC.sh -g <Reference genome> -b <Bed file> -o <Prefix of the output files (including the path)> -p <Position frequency matrices> -c <Number of cores>
 ```
 
-###Merging Transcription Factor affinities and DNase data for Model training.
+### Merging Transcription Factor affinities and DNase data for Model training.
 We provide a Python script to combine the TEPIC annotations with the DNase coverage data:
 `Preprocessing/IntegrateTraining.py`
 
@@ -75,8 +75,8 @@ The files `Preprocessing/headerC.txt`, `Preprocessing/headerC_TL.txt`,`Preproces
 Both leaderboard data and test data will be integrated later.
 
 
-###Predicting Transcription Factor binding in bins using the full feature set
-####Step 1.1 Generating RData files
+### Predicting Transcription Factor binding in bins using the full feature set
+#### Step 1.1 Generating RData files
 Before the random forest models can be trained, the training data files need to be reformatted. 
 To shorten the time required for loading the data, the reformatted data is stored as a RData file.
 This is done by the script `Preprocessing/Dump_Training_Data_As_RData.R`.
@@ -85,7 +85,7 @@ The command to run the script is:
 ```
 Rscript Dump_Training_As_RData.R <Folder holding the subfolders with the training data for all TFs> <Target directory for the RData files>
 ```
-####Step 1.2 Training Random Forests
+#### Step 1.2 Training Random Forests
 To train the random forests, the script `Classification/Train_Random_Forest_Classifiers_Full_Feature_Space.py` can be used.
 
 We learn 4,500 trees and use the default values for cross validation. 
@@ -101,7 +101,7 @@ Therefore, we use the feature importance of the learned models to determine whic
 For each tissue that is avaiable as a training data set, we consider the top 20 features. The union of those will be used later to learn a model for that particular TF.
 This script learns the models on all RData files that are present in the given directory.
 
-###Determine top features
+### Determine top features
 To determine the top features, use the script `Classification/Get_Feature_Importance_From_Full_Models.py`.
 The features are extracted from the RFs trained in Step 1.2.
 
@@ -111,7 +111,7 @@ python Get_Feature_Importance_From_Full_Models.py <Target directory> <Path to th
 ```
 Note that this must be called individually on all RData files and TFs for which the reduced feature space should be produced.
 
-###Shrink the feature space
+### Shrink the feature space
 We use the files containing the top TFs to generate the final TF features for our models. We have three scripts to extract the suitable
 data from training, leaderboard and test files: `Preprocessing/CutTrainingData.py`, `Preprocessing/CutLeaderboardData.py` , `Preprocessing/CutTestData.py`
 
@@ -130,7 +130,7 @@ To generate the TF data for the final round run the following command:
 python CutTestData.py <Path containing the complete TF annotation of the test data> <Path to the files containing the TFs that should be kept> < Target directory>
 ```
 
-###Merge TF annotations and DNase data for Training data, Leaderboard data, and Test data
+### Merge TF annotations and DNase data for Training data, Leaderboard data, and Test data
 Before we can retrain the models and apply them to the Leadeboard and the Test data, we have to merge the TF affinities and the DNase data again.
 We provide two individual Python scripts to combine the TEPIC annotations with the DNase coverage data:
 `Preprocessing/IntegrateLeaderboard.py`, `Preprocessing/IntegrateTest.py`
@@ -146,7 +146,7 @@ To integrate the Test data, use the following command in the Preprocessing folde
 python IntegrateTest.py <Path to the reduced TEPIC annotations of the test data> <Path to the DNase coverage data for the middle bins computed in the test regions> <Path to the DNase coverage data for the left bins computed in the training regions> <Path to the DNase coverage data for the right bins computed in the test regions> <Target directory>
 ```
 
-###Computing maximisied TF features
+### Computing maximisied TF features
 In addition to shrink the feature space, we found that the performance of the random forests are improved when one considers the maximum affinity value for a TF in all adjacent bound training samples instead of the original values.
 This transformation is performed by the script `Preprocessing/ConvertTrainingDataToMaxAffinityFormat.py`.
 
@@ -165,8 +165,8 @@ python ConvertMaxLeaderboardTest.py <Path to either the shrunk, integrated, Test
 ```
 Note that this script runs about 14 hours on the test data.
 
-###Retrain the models
-####Step 2.1 Generating RData files
+### Retrain the models
+#### Step 2.1 Generating RData files
 As above, before the random forest models can be trained, the training data files need to be reformatted and RData files are created.
 Again, this is done by the script `Preprocessing/Dump_Training_Data_As_RData.R`.
 
@@ -175,7 +175,7 @@ The command to run the script is:
 Rscript Dump_Training_As_RData.R <Folder holding the subfolders with the shrunk training data for all TFs> <Target directory for the RData files>
 ```
 
-####Step 2.2 Learn models
+#### Step 2.2 Learn models
 To train the random forests, the script `Classification/Train_Random_Forest_Classifiers_Reduced_Feature_Space.py` can be used.
 We use the same parameteres as above.
 
@@ -185,7 +185,7 @@ python Train_Random_Forest_Classifiers_Reduced_Feature_Space.py <Folder containi
 ```
 This learns models for all RData files that are present in the given directory.
 
-###Apply them to Leaderboard data and Test data
+### Apply them to Leaderboard data and Test data
 To make predictions on the leaderboard and test data sets, the script `Classification/Predict_TF_Binding.py` can be used. 
 This script has to be started manually for all files that should be classified.
 
@@ -194,7 +194,7 @@ The command to run the script for one such file is:
 python Predict_TF_Binding.py <File to be classified> <Folder containing the trained random forest models from Step 2.2> <Name of the TF for which binding should be predicted> <Target directory to store the predictions> 
 ```
 
-###Preparing data for submission
+### Preparing data for submission
 In order to reformat the data such that it fullfills the requirements of the challenge, use the script 
 `Postprocessing/Submission_Format.bash`.
 Here, the data is sorted, renamed, and stored according to the challenge conventions.
@@ -203,5 +203,5 @@ The command to run the script is:
 ```
 bash Submission_Format.bash <TF name> <Tissue name> <File to reformat> <F for Final round submission, L for Leaderboard submission>
 ```
-##Contact
+## Contact
 Please contact *fbejhati[at]mmci.uni-saarland.de* or *fschmidt[at]mmci.uni-saarland.de* in case of questions.
